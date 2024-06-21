@@ -1,13 +1,21 @@
-FROM oven/bun:1.1.3-alpine
+FROM oven/bun
 
-RUN apk add --no-cache nodejs npm git
+# Set the working directory in the container
+WORKDIR /usr/src/app
 
-RUN git clone --depth=1 https://github.com/miurla/morphic /app && \
-  rm -rf /app/.git && \
-  cd /app && \
-  bun i && \
-  bun next telemetry disable
+# Copy package.json, package-lock.json (if available), bun.lockb, and other necessary files
+COPY package*.json bun.lockb ./
 
-WORKDIR /app
+# Install dependencies
+RUN bun install
 
-CMD ["bun", "dev"]
+# Copy the rest of your application's source code
+COPY . .
+
+# Build your Next.js application
+RUN bun run build
+
+RUN bun next telemetry disable
+
+# Start the application
+CMD ["bun", "start"]
